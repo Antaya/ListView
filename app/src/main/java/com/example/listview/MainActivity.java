@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView list;
     String[] savedText;
     SimpleAdapter listContentAdapter;
+   private ArrayList<Integer> savedPosition = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+                savedPosition.add(position);
                 data.remove(position);
                 listContentAdapter.notifyDataSetChanged();
             }
@@ -66,6 +68,22 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putIntegerArrayList("SavedPosition", savedPosition);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        savedPosition = savedInstanceState.getIntegerArrayList("SavedPosition");
+        for (int i = 0; i < savedPosition.size(); i++){
+            data.remove(savedPosition.get(i).intValue());
+            listContentAdapter.notifyDataSetChanged();
+        }
     }
 
     void saveText() {
