@@ -1,8 +1,12 @@
 package com.example.listview;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,38 +16,68 @@ import java.util.Map;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class MainActivity extends AppCompatActivity {
 
+    SharedPreferences sPref;
+    final String SAVED_TEXT = "saved_text";
+    private List<Map<String, String>> data = new ArrayList<>();
+    private ListView list;
+    String[] savedText;
+    SimpleAdapter listContentAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        list = (ListView) findViewById(R.id.list);
 
-        ListView list = findViewById(R.id.list);
-
-        List<Map<String, String>> data = prepareContent();
-
-        SimpleAdapter listContentAdapter = createAdapter(data);
+        listContentAdapter = createAdapter(data);
 
         list.setAdapter(listContentAdapter);
+        saveText();
+        data = loadText();
+
+
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+                data.remove(position);
+                listContentAdapter.notifyDataSetChanged();
+            }
+
+        });
+
+        final SwipeRefreshLayout swipeLayout = findViewById(R.id.swipeRefresh);
+        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            // Будет вызван, когда пользователь потянет список вниз
+            @Override
+            public void onRefresh() {
+                loadText();
+                swipeLayout.setRefreshing(false);
+                listContentAdapter.notifyDataSetChanged();
+
+            }
+        });
+
 
     }
 
-    @NonNull
-    private SimpleAdapter createAdapter(List<Map<String, String>> data) {
-        SimpleAdapter simpleAdapter = new SimpleAdapter(this, data, R.layout.simple_list_item,
-                new String[]{"title", "subtitle"}, new int[]{R.id.item_text, R.id.item_text_length});
-        return simpleAdapter;
+    void saveText() {
+        sPref = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor ed = sPref.edit();
+        ed.putString(SAVED_TEXT, getString(R.string.large_text));
+        ed.commit();
+
     }
 
-    @NonNull
-    private List<Map<String, String>> prepareContent() {
-        List<Map<String, String>> data = new ArrayList<>();
+    public List<Map<String, String>> loadText() {
+        sPref = getPreferences(MODE_PRIVATE);
         Map<String, String> contentMap1 = new HashMap<>();
         Map<String, String> contentMap2 = new HashMap<>();
         Map<String, String> contentMap3 = new HashMap<>();
@@ -62,28 +96,26 @@ public class MainActivity extends AppCompatActivity {
         Map<String, String> contentMap16 = new HashMap<>();
         Map<String, String> contentMap17 = new HashMap<>();
         Map<String, String> contentMap18 = new HashMap<>();
-
-
-        String[] arrayContent = getString(R.string.large_text).split("\n\n");
-        for (int i = 0; i < arrayContent.length; i++) {
-            String part1 = arrayContent[0];
-            String part2 = arrayContent[1];
-            String part3 = arrayContent[2];
-            String part4 = arrayContent[3];
-            String part5 = arrayContent[4];
-            String part6 = arrayContent[5];
-            String part7 = arrayContent[6];
-            String part8 = arrayContent[7];
-            String part9 = arrayContent[8];
-            String part10 = arrayContent[9];
-            String part11 = arrayContent[10];
-            String part12 = arrayContent[11];
-            String part13 = arrayContent[12];
-            String part14 = arrayContent[13];
-            String part15 = arrayContent[14];
-            String part16 = arrayContent[15];
-            String part17 = arrayContent[16];
-            String part18 = arrayContent[17];
+        String[] savedText = sPref.getString(SAVED_TEXT, "").split("\n\n");
+        for (int i = 0; i < savedText.length; i++) {
+            String part1 = savedText[0];
+            String part2 = savedText[1];
+            String part3 = savedText[2];
+            String part4 = savedText[3];
+            String part5 = savedText[4];
+            String part6 = savedText[5];
+            String part7 = savedText[6];
+            String part8 = savedText[7];
+            String part9 = savedText[8];
+            String part10 = savedText[9];
+            String part11 = savedText[10];
+            String part12 = savedText[11];
+            String part13 = savedText[12];
+            String part14 = savedText[13];
+            String part15 = savedText[14];
+            String part16 = savedText[15];
+            String part17 = savedText[16];
+            String part18 = savedText[17];
 
 
             contentMap1.put("title", part1);
@@ -146,4 +178,13 @@ public class MainActivity extends AppCompatActivity {
 
         return data;
     }
+
+    @NonNull
+    private SimpleAdapter createAdapter(List<Map<String, String>> data) {
+        SimpleAdapter listContentAdapter = new SimpleAdapter(this, data, R.layout.simple_list_item,
+                new String[]{"title", "subtitle"}, new int[]{R.id.item_text, R.id.item_text_length});
+        return listContentAdapter;
+    }
+
+
 }
