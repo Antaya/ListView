@@ -24,9 +24,9 @@ public class MainActivity extends AppCompatActivity {
     final String SAVED_TEXT = "saved_text";
     private List<Map<String, String>> data = new ArrayList<>();
     private ListView list;
-    String[] savedText;
-    SimpleAdapter listContentAdapter;
-   private ArrayList<Integer> savedPosition = new ArrayList<>();
+    private SimpleAdapter listContentAdapter;
+    private ArrayList<Integer> savedPosition = new ArrayList<>();
+    private SwipeRefreshLayout swipeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
         list.setAdapter(listContentAdapter);
         saveText();
-        data = loadText();
+        loadText();
 
 
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -55,11 +55,12 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-        final SwipeRefreshLayout swipeLayout = findViewById(R.id.swipeRefresh);
+        swipeLayout = findViewById(R.id.swipeRefresh);
         swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             // Будет вызван, когда пользователь потянет список вниз
             @Override
             public void onRefresh() {
+                data.clear();
                 loadText();
                 swipeLayout.setRefreshing(false);
                 listContentAdapter.notifyDataSetChanged();
@@ -80,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         savedPosition = savedInstanceState.getIntegerArrayList("SavedPosition");
-        for (int i = 0; i < savedPosition.size(); i++){
+        for (int i = 0; i < savedPosition.size(); i++) {
             data.remove(savedPosition.get(i).intValue());
             listContentAdapter.notifyDataSetChanged();
         }
@@ -94,10 +95,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public List<Map<String, String>> loadText() {
+    public void loadText() {
         sPref = getPreferences(MODE_PRIVATE);
-
-
         String[] savedText = sPref.getString(SAVED_TEXT, "").split("\n\n");
         for (int i = 0; i < savedText.length; i++) {
             String part = savedText[i];
@@ -108,7 +107,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        return data;
     }
 
     @NonNull
